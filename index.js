@@ -1,14 +1,19 @@
 #!/usr/bin/env node
+const $path = require('path')
 const $inquirer = require('inquirer'); // 对话交互
-const program = require('commander');
-const download = require('download-git-repo');
+const $program = require('commander'); //node.js命令行界面的完整解决方案
+const $download = require('download-git-repo'); // 模板下载工具
 const $colors = require('colors'); // 改变输出颜色
+const $shell = require('shelljs');
 
-const $shell = require('shelljs');  // shell脚本
+// 后台管理模板
 const adminTpl = "https://github.com:2020807070/cchao-blog#master"
+// 博客模板
 const vuepressTpl = "https://github.com:2020807070/cchao-blog#master"
 
-program.version('1.0.0', '-v, --version')
+const $package = require($path.resolve(__dirname, '../package.json')) // 动态获取
+
+$program.version('1.0.0', '-v, --version')
   .command('init')
   .action(() => {
     $inquirer.prompt(
@@ -48,7 +53,7 @@ program.version('1.0.0', '-v, --version')
         process.exit(1)
       }
       if (answers.type === '后台管理系统') {
-        download(adminTpl, answers.name, { clone: true }, (err) => {
+        $download(adminTpl, answers.name, { clone: true }, (err) => {
           console.log(err ? 'Error' : 'Success')
         })
       }
@@ -58,11 +63,4 @@ program.version('1.0.0', '-v, --version')
       // console.log(answers); // 返回的结果
     })
   });
-program.parse(process.argv);
-
-
-function downLoadTemplate(Tpl, name) {
-  download(Tpl, name, { clone: true }, (err) => {
-    console.log(err ? 'Error' : 'Success')
-  })
-}
+$program.parse(process.argv);

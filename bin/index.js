@@ -74,12 +74,24 @@ $program.version($package.version, '-v, --version')
         process.exit(1)
       }
       if (answers.type === '后台管理系统') {
+        var'后台模板初始化 请稍后...');
+        spinne spinner = ora(r.start();
         $download(adminTpl, answers.name, { clone: true }, (err) => {
-
+          const fileName = `${answers.name}/src/App.vue`;
+          const content = $fs.readFileSync(fileName).toString();
+          const result = $handlebars.compile(content)({
+            title: answers.title
+          });
+          $fs.writeFileSync(fileName, result);
         })
+        if (err) {
+          spinner.fail('下载失败'.red);
+        } else {
+          spinner.succeed(`${answers.name} - 创建成功！`.green);
+        }
       }
       if (answers.type === 'Vuepress博客') {
-        var spinner = ora('模板初始化 请稍后...');
+        var spinner = ora('博客模板初始化 请稍后...');
         spinner.start();
         $download(vuepressTpl, answers.name, { clone: true }, (err) => {
           const fileName = `${answers.name}/docs/.vuepress/config.js`;

@@ -11,6 +11,10 @@
 ░ ░      ░ ░       ░  ░  ░      ░  ░    ░ ░  ░ ░          ░  ░ ░
 ░        ░                                   ░
 ```
+## 下载
+
+> $ npm i cchao-cli -g
+
 ## 使用
 
-> $ tnpm i cchao-cli -g
+![](https://user-gold-cdn.xitu.io/2019/5/15/16abab5f9703cec4?w=542&h=603&f=gif&s=40537)

@@ -90,31 +90,25 @@ $program.version($package.version, '-v, --version')
       switch (answers.type) {
         case '后台管理系统':
           downloadTpl(answers).then((err) => {
-            const adminTit = `${answers.name}/src/App.vue`;
-            const content = $fs.readFileSync(adminTit).toString();
-            const result = $handlebars.compile(content)({
-              title: answers.title
-            });
-            $fs.writeFileSync(adminTit, result);
+            const AppVue = `${answers.name}/src/App.vue`;
             const pageageJson = `${answers.name}/package.json`;
-            const pContent = $fs.readFileSync(pageageJson).toString();
-            const pResult = $handlebars.compile(pContent)({
+            $fs.writeFileSync(AppVue, $handlebars.compile($fs.readFileSync(AppVue).toString())({
+              title: answers.title
+            }));
+            $fs.writeFileSync(pageageJson, $handlebars.compile($fs.readFileSync(pageageJson).toString())({
               name: answers.name,
               description: answers.description
-            });
-            $fs.writeFileSync(pageageJson, pResult);
+            }));
             checkError(err, answers, spinner)
           })
           break;
         case 'Vuepress博客':
           downloadTpl(answers).then((err) => {
             const fileName = `${answers.name}/docs/.vuepress/config.js`;
-            const content = $fs.readFileSync(fileName).toString();
-            const result = $handlebars.compile(content)({
+            $fs.writeFileSync(fileName, $handlebars.compile($fs.readFileSync(fileName).toString())({
               title: answers.title,
               description: answers.description
-            });
-            $fs.writeFileSync(fileName, result);
+            }));
             checkError(err, answers, spinner)
           })
           break;

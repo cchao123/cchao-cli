@@ -7,12 +7,24 @@ const $colors = require('colors'); // 改变输出颜色
 const $shell = require('shelljs');  // shell脚本
 const $fs = require('fs');
 const $path = require('path');
-const ora = require('ora');
+const $ora = require('ora');
 const $logo = require('../src/logo');
 const $package = require($path.resolve(__dirname, '../package.json'))
 
-const adminTpl = "https://github.com:2020807070/vue-admin#template"
-const vuepressTpl = "https://github.com:2020807070/cchao-blog#template"
+const config = {
+  // 'Vue多页项目': {
+  //   tplName: 'Vue多页项目',
+  //   tplUrl: 'tplUrl'
+  // },
+  '后台管理系统': {
+    tplName: '后台管理系统',
+    tplUrl: 'https://github.com:2020807070/vue-admin#template'
+  },
+  'Vuepress博客': {
+    tplName: 'Vuepress博客',
+    tplUrl: 'https://github.com:2020807070/cchao-blog#template'
+  }
+}
 
 
 $program
@@ -23,21 +35,18 @@ $program
     console.log('  $ cchao-cli init')
   })
 
-
-
 $program.version($package.version, '-v, --version')
   .command('init')
   .description('创建初始化项目')
   .action(() => {
+    let choices = []
+    for (var key in config) { choices.push(key) }
     $inquirer.prompt(
       [{
         type: 'list',
         name: 'type',
         message: '请选择你要创建的项目:',
-        choices: [
-          '后台管理系统',
-          'Vuepress博客'
-        ]
+        choices: choices
       },
       {
         message: '请输入项目名称:',
@@ -69,56 +78,66 @@ $program.version($package.version, '-v, --version')
         message: '是否继续?'
       }]
     ).then(answers => {
+      // 终止退出
       if (!answers.moveon) {
         $shell.echo(`您终止了${answers.type} --> ${answers.name} 的创建!`.red)
         process.exit(1)
       }
-      if (answers.type === '后台管理系统') {
-        const spinner = ora('后台模板初始化 请稍后...');
-        spinner.start();
-        $download(adminTpl, answers.name, { clone: true }, (err) => {
-          const adminTit = `${answers.name}/src/App.vue`;
-          const content = $fs.readFileSync(adminTit).toString();
-          const result = $handlebars.compile(content)({
-            title: answers.title
-          });
-          $fs.writeFileSync(adminTit, result);
-          const pageageJson = `${answers.name}/package.json`;
-          const pContent = $fs.readFileSync(pageageJson).toString();
-          const pResult = $handlebars.compile(pContent)({
-            name: answers.name,
-            description: answers.description
-          });
-          $fs.writeFileSync(pageageJson, pResult);
+      // loading
+      const spinner = $ora(`${answers.type}初始化 请稍后...`);
+      spinner.start();
 
-          if (err) {
-            spinner.fail('下载失败'.red);
-          } else {
-            spinner.succeed(`${answers.name} - 创建成功！`.green);
-          }
-        })
-      }
-
-      if (answers.type === 'Vuepress博客') {
-        var spinner = ora('博客模板初始化 请稍后...');
-        spinner.start();
-        $download(vuepressTpl, answers.name, { clone: true }, (err) => {
-          const fileName = `${answers.name}/docs/.vuepress/config.js`;
-          const content = $fs.readFileSync(fileName).toString();
-          const result = $handlebars.compile(content)({
-            title: answers.title,
-            description: answers.description
-          });
-          $fs.writeFileSync(fileName, result);
-          if (err) {
-            spinner.fail('下载失败'.red);
-          } else {
-            spinner.succeed(`${answers.name} - 创建成功！`.green);
-          }
-        })
+      switch (answers.type) {
+        case '后台管理系统':
+          downloadTpl(answers).then((err) => {
+            const adminTit = `${answers.name}/src/App.vue`;
+            const content = $fs.readFileSync(adminTit).toString();
+            const result = $handlebars.compile(content)({
+              title: answers.title
+            });
+            $fs.writeFileSync(adminTit, result);
+            const pageageJson = `${answers.name}/package.json`;
+            const pContent = $fs.readFileSync(pageageJson).toString();
+            const pResult = $handlebars.compile(pContent)({
+              name: answers.name,
+              description: answers.description
+            });
+            $fs.writeFileSync(pageageJson, pResult);
+            checkError(err, answers, spinner)
+          })
+          break;
+        case 'Vuepress博客':
+          downloadTpl(answers).then((err) => {
+            const fileName = `${answers.name}/docs/.vuepress/config.js`;
+            const content = $fs.readFileSync(fileName).toString();
+            const result = $handlebars.compile(content)({
+              title: answers.title,
+              description: answers.description
+            });
+            $fs.writeFileSync(fileName, result);
+            checkError(err, answers, spinner)
+          })
+          break;
+        default:
+          break;
       }
     })
   });
+
+
+// 公用模板下载
+function downloadTpl(answers) {
+  return new Promise((resolve, reject) => {
+    $download(config[answers.type].tplUrl, answers.name, { clone: true }, (err) => {
+      resolve(err)
+    })
+  })
+}
+
+// 公用状态检测
+function checkError(err, answers, spinner) {
+  err ? spinner.fail('下载失败'.red) : spinner.succeed(`${answers.name} - 创建成功！`.green);
+}
 
 $program.parse(process.argv);
 
